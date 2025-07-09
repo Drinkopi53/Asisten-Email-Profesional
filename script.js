@@ -41,12 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Konfigurasi API (PENTING: Ganti dengan API Key Anda) ---
-    // const API_KEY = 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI';
-    // const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    const API_KEY = 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     // --- Mode Simulasi API (untuk pengembangan tanpa API Key asli) ---
-    const SIMULATE_API = true; // Set ke false jika menggunakan API Key asli
-    const SIMULATION_DELAY = 1500; // milidetik
+    const SIMULATE_API = false; // DISET KE FALSE untuk menggunakan API Gemini asli
+    const SIMULATION_DELAY = 1500; // Tidak lagi digunakan jika SIMULATE_API false
 
     // --- Event Listener for Template Selector ---
     templateSelector.addEventListener('change', () => {
@@ -79,16 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let generatedText = "";
             if (SIMULATE_API) {
-                generatedText = await simulateGeminiApiCall(inputText);
+                generatedText = await simulateGeminiApiCall(inputText); // Ini akan tetap sebagai fallback jika diperlukan
             } else {
-                // Kode untuk panggilan API Gemini asli (membutuhkan API_KEY dan API_URL yang dikonfigurasi)
-                // Pastikan Anda memiliki API_KEY yang valid.
-                // if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
-                //     throw new Error("API Key Gemini belum dikonfigurasi. Silakan edit script.js.");
-                // }
-                // generatedText = await callGeminiApi(inputText);
-                displayError("Mode API asli belum diimplementasikan sepenuhnya dalam contoh ini. Atur SIMULATE_API ke true atau lengkapi callGeminiApi.");
-                throw new Error("Panggilan API asli belum diimplementasikan.");
+                if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
+                    displayError("API Key Gemini belum dikonfigurasi di script.js. Silakan periksa dan isi API Key Anda.");
+                    throw new Error("API Key Gemini belum dikonfigurasi.");
+                }
+                // Panggil API Gemini asli
+                const currentInputLang = inputLanguageSelector.value;
+                const currentOutputLang = outputLanguageSelector.value;
+                generatedText = await callGeminiApi(inputText, currentInputLang, currentOutputLang);
             }
 
             originalGeneratedText = generatedText; // Simpan hasil asli
@@ -228,72 +228,111 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Event Listeners for Tone Sliders ---
-    formalitySlider.addEventListener('input', () => {
-        updateFormalityValue();
-        adjustEmailSimulated();
-    });
-    styleSlider.addEventListener('input', () => {
-        updateStyleValue();
-        adjustEmailSimulated();
-    });
-    concisenessSlider.addEventListener('input', () => {
-        updateConcisenessValue();
-        adjustEmailSimulated();
-    });
+    let debounceTimer;
+    const handleSliderChange = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            // Update text labels immediately
+            updateFormalityValueDisplay();
+            updateStyleValueDisplay();
+            updateConcisenessValueDisplay();
 
-    function updateFormalityValue() {
+            // Call API to adjust email
+            await adjustEmailWithApi();
+        }, 500); // Debounce time: 500ms
+    };
+
+    formalitySlider.addEventListener('input', handleSliderChange);
+    styleSlider.addEventListener('input', handleSliderChange);
+    concisenessSlider.addEventListener('input', handleSliderChange);
+
+    function updateFormalityValueDisplay() { // Renamed from updateFormalityValue
         const values = ["Sangat Santai", "Netral", "Sangat Formal"];
         formalityValue.textContent = values[formalitySlider.value];
     }
-    function updateStyleValue() {
+    function updateStyleValueDisplay() { // Renamed from updateStyleValue
         const values = ["Diplomatis", "Langsung", "Persuasif"];
         styleValue.textContent = values[styleSlider.value];
     }
-    function updateConcisenessValue() {
+    function updateConcisenessValueDisplay() { // Renamed from updateConcisenessValue
         const values = ["Lengkap & Rinci", "Sedang", "Singkat & Padat"];
         concisenessValue.textContent = values[concisenessSlider.value];
     }
 
-    function adjustEmailSimulated() {
-        if (!originalGeneratedText || originalGeneratedText === "Tidak dapat menghasilkan email saat ini.") {
+    async function adjustEmailWithApi() {
+        if (!originalGeneratedText || originalGeneratedText === "Tidak dapat menghasilkan email saat ini." || SIMULATE_API) {
+            // If using simulation, fallback to old simulated adjustment
+            if (SIMULATE_API && originalGeneratedText) {
+                adjustEmailSimulatedFallback(); // Call the old simulation logic
+            }
+            return;
+        }
+        if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
+            displayError("API Key Gemini belum dikonfigurasi untuk penyesuaian nada. Silakan periksa script.js.");
             return;
         }
 
+        showLoadingState(true);
+        professionalEmail.classList.add('opacity-50'); // Dim text during API call
+
+        try {
+            const formalityMap = ["very casual", "neutral", "very formal"];
+            const styleMap = ["diplomatic", "direct", "persuasive"];
+            const concisenessMap = ["detailed and comprehensive", "medium", "brief and concise"];
+
+            const toneSettings = {
+                formality: formalityMap[formalitySlider.value],
+                style: styleMap[styleSlider.value],
+                conciseness: concisenessMap[concisenessSlider.value]
+            };
+
+            // Penting: Gunakan userOriginalInput sebagai dasar untuk penyesuaian nada,
+            // agar setiap penyesuaian slider tidak bertumpuk pada hasil API sebelumnya yang sudah disesuaikan juga.
+            // Bahasa input dan output juga harus dari userOriginalInput's context.
+            const currentInputLang = inputLanguageSelector.value; // Ini mungkin perlu dipikirkan ulang jika output lang berbeda
+            const currentOutputLang = outputLanguageSelector.value;
+
+            // Base text untuk penyesuaian adalah userOriginalInput, BUKAN originalGeneratedText (hasil API pertama)
+            // karena originalGeneratedText mungkin sudah hasil terjemahan/profesionalisasi.
+            // Kita ingin AI menerapkan nada pada *konsep asli* dari userOriginalInput.
+            const adjustedText = await callGeminiApi(userOriginalInput, currentInputLang, currentOutputLang, toneSettings);
+
+            professionalEmail.value = adjustedText;
+            // Tidak perlu mengubah originalGeneratedText di sini, karena itu adalah basis untuk *generasi awal*
+            // atau basis untuk *perubahan bahasa*. Perubahan slider adalah variasi dari itu.
+            // Namun, jika kita ingin perubahan slider bersifat kumulatif pada hasil terakhir, maka originalGeneratedText perlu diupdate.
+            // Untuk saat ini, setiap gerakan slider akan memanggil API berdasarkan userOriginalInput + tone.
+
+        } catch (error) {
+            console.error("Error adjusting email with API:", error);
+            displayError(error.message || "Gagal menyesuaikan email dengan API.");
+            // Biarkan teks email yang ada, jangan kosongkan.
+        } finally {
+            showLoadingState(false);
+            professionalEmail.classList.remove('opacity-50');
+        }
+    }
+
+    // Fallback simulation logic for sliders if SIMULATE_API is true
+    function adjustEmailSimulatedFallback() {
+        if (!originalGeneratedText) return;
         let adjustedText = originalGeneratedText;
 
-        // Simulasi penyesuaian berdasarkan formality
-        const formality = parseInt(formalitySlider.value);
-        if (formality === 0) { // Sangat Santai
-            adjustedText = "Hei,\n\n" + adjustedText.replace("Kepada pihak yang berkepentingan,\n\n", "").replace("Hormat kami,\n\n[Nama Anda]", "Thanks,\n[Nama Anda]");
-            if (!adjustedText.includes("Thanks,\n[Nama Anda]")) adjustedText += "\n\nThanks,\n[Nama Anda]";
-        } else if (formality === 2) { // Sangat Formal
-            if (!adjustedText.startsWith("Dengan hormat,\n\n") && !adjustedText.startsWith("Kepada Yth.")) {
-                 adjustedText = "Dengan hormat,\n\n" + adjustedText.replace("Kepada pihak yang berkepentingan,\n\n", "");
-            }
-            if (!adjustedText.includes("Demikian kami sampaikan. Atas perhatiannya, diucapkan terima kasih.\n\nHormat saya,\n[Nama Anda]")) {
-                adjustedText = adjustedText.replace("Hormat kami,\n\n[Nama Anda]", "Demikian kami sampaikan. Atas perhatiannya, diucapkan terima kasih.\n\nHormat saya,\n[Nama Anda]");
-            }
-        }
-        // Untuk formality === 1 (Netral), kita anggap originalGeneratedText sudah netral
+        const formalityMap = ["Sangat Santai", "Netral", "Sangat Formal"];
+        const styleMap = ["Diplomatis", "Langsung", "Persuasif"];
+        const concisenessMap = ["Lengkap & Rinci", "Sedang", "Singkat & Padat"];
 
-        // Simulasi penyesuaian berdasarkan style
-        const style = parseInt(styleSlider.value);
-        if (style === 0) { // Diplomatis
-            adjustedText = adjustedText.replace("kami sampaikan bahwa", "kami ingin menginformasikan dengan hati-hati bahwa");
-        } else if (style === 2) { // Persuasif
-            adjustedText = adjustedText.replace("Kami akan segera memberikan pembaruan", "Kami percaya bahwa pembaruan ini akan sangat bermanfaat dan akan kami berikan segera");
-        }
+        let prefix = `[Simulasi: Formalitas=${formalityMap[formalitySlider.value]}, Gaya=${styleMap[styleSlider.value]}, Keringkasan=${concisenessMap[concisenessSlider.value]}]\n\n`;
 
-        // Simulasi penyesuaian berdasarkan conciseness
-        const conciseness = parseInt(concisenessSlider.value);
-        if (conciseness === 0 && !adjustedText.includes("Sebagai tambahan informasi,")) { // Lengkap & Rinci
-            adjustedText += "\n\nSebagai tambahan informasi, detail lebih lanjut akan kami sertakan dalam komunikasi berikutnya.";
-        } else if (conciseness === 2) { // Singkat & Padat
-            adjustedText = adjustedText.split('\n\n')[0]; // Ambil paragraf pertama saja (simulasi kasar)
-             if (formality === 0 && !adjustedText.endsWith("Thanks,\n[Nama Anda]")) adjustedText += "\n\nThanks,\n[Nama Anda]";
-             else if (formality !== 0 && !adjustedText.endsWith("Hormat kami,\n[Nama Anda]") && !adjustedText.includes("Hormat saya,\n[Nama Anda]")) adjustedText += "\n\nSingkatnya,\n[Nama Anda]";
+        // Simulasi yang sangat sederhana hanya dengan menambahkan prefix
+        // dan mungkin memotong teks untuk keringkasan.
+        if (parseInt(concisenessSlider.value) === 2) { // Singkat & Padat
+            adjustedText = prefix + (originalGeneratedText.substring(0, Math.min(originalGeneratedText.length, 150)) + "...");
+        } else if (parseInt(concisenessSlider.value) === 0) { // Lengkap & Rinci
+             adjustedText = prefix + originalGeneratedText + "\n\n(Ini adalah simulasi penambahan detail lebih lanjut...)";
+        } else {
+            adjustedText = prefix + originalGeneratedText;
         }
-
         professionalEmail.value = adjustedText;
     }
 
@@ -320,49 +359,96 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessages.textContent = "";
     }
 
-    // --- Fungsi untuk Panggilan API Gemini Asli (Contoh) ---
-    // async function callGeminiApi(promptText) {
-    //     const requestBody = {
-    //         contents: [{
-    //             parts: [{
-    //                 text: `Tulis ulang teks berikut menjadi sebuah email yang formal dan profesional, dengan tetap menjaga inti pesan. Jika teksnya sudah cukup formal, sempurnakan sedikit agar lebih baik. Teks asli: "${promptText}"`
-    //             }]
-    //         }],
-    //         // Optional: tambahkan generationConfig jika perlu
-    //         // generationConfig: {
-    //         //   temperature: 0.7,
-    //         //   topK: 1,
-    //         //   topP: 1,
-    //         //   maxOutputTokens: 2048,
-    //         // }
-    //     };
+    // --- Fungsi untuk Panggilan API Gemini Asli ---
+    async function callGeminiApi(promptText, inputLang, outputLang, toneSettings = null) {
+        let effectivePrompt = "";
 
-    //     const response = await fetch(API_URL, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify(requestBody)
-    //     });
+        // Default prompt (jika tidak ada penyesuaian nada/gaya/bahasa)
+        if (inputLang === 'id' && outputLang === 'id') {
+            effectivePrompt = `Tulis ulang teks Bahasa Indonesia berikut menjadi sebuah email yang formal dan profesional, dengan tetap menjaga inti pesan. Jika teksnya sudah cukup formal, sempurnakan sedikit agar lebih baik. Teks asli: "${promptText}"`;
+        } else if (inputLang === 'en' && outputLang === 'en') {
+            effectivePrompt = `Rewrite the following English text into a formal and professional email, maintaining the core message. If the text is already quite formal, refine it slightly to make it better. Original text: "${promptText}"`;
+        } else if (inputLang === 'id' && outputLang === 'en') {
+            effectivePrompt = `Translate the following Indonesian text into a professional English email. Ensure the tone is appropriate for the context, and the language is formal and clear. If the text is already an email, refine it. Indonesian text: "${promptText}"`;
+        } else if (inputLang === 'en' && outputLang === 'id') {
+            effectivePrompt = `Terjemahkan teks Bahasa Inggris berikut menjadi email profesional berbahasa Indonesia. Pastikan nadanya sesuai dengan konteks, dan bahasanya formal serta jelas. Jika teks tersebut sudah berupa email, sempurnakanlah. Teks Bahasa Inggris: "${promptText}"`;
+        } else { // Fallback jika kombinasi bahasa tidak terduga
+            effectivePrompt = `Rewrite the following text into a formal and professional email: "${promptText}"`;
+        }
 
-    //     if (!response.ok) {
-    //         const errorData = await response.json();
-    //         console.error("Gemini API Error:", errorData);
-    //         throw new Error(`Error dari API Gemini: ${errorData.error?.message || response.statusText}`);
-    //     }
+        if (toneSettings) {
+            let toneInstructions = "";
+            if (toneSettings.formality) toneInstructions += ` Adjust formality to: ${toneSettings.formality}.`;
+            if (toneSettings.style) toneInstructions += ` Adjust writing style to: ${toneSettings.style}.`;
+            if (toneSettings.conciseness) toneInstructions += ` Adjust conciseness to: ${toneSettings.conciseness}.`;
 
-    //     const data = await response.json();
-    //     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-    //         return data.candidates[0].content.parts[0].text;
-    //     } else {
-    //         // Handle kasus dimana respons tidak sesuai format yang diharapkan
-    //         console.error("Invalid response structure from Gemini API:", data);
-    //         throw new Error("Format respons dari API tidak valid.");
-    //     }
-    // }
+            // Prepend tone instructions to the existing prompt or integrate it more intelligently
+            effectivePrompt = `Considering the following desired adjustments: ${toneInstructions}. Now, take the original request: "${effectivePrompt}" and generate the email.`;
+            // Alternatif: Bisa juga membuat prompt yang lebih terstruktur
+            // effectivePrompt = `Task: Generate a professional email.
+            // Original Text: "${promptText}"
+            // Source Language: ${inputLang}
+            // Target Language: ${outputLang}
+            // Desired Formality: ${toneSettings.formality || 'neutral'}
+            // Desired Style: ${toneSettings.style || 'direct'}
+            // Desired Conciseness: ${toneSettings.conciseness || 'medium'}
+            // Instructions: [Combined instructions based on above]`;
+        }
 
-    // --- Fungsi Simulasi API ---
-    async function simulateGeminiApiCall(inputText) {
+        console.log("Sending to Gemini API. Prompt:", effectivePrompt);
+
+        const requestBody = {
+            contents: [{ parts: [{ text: effectivePrompt }] }],
+            // Optional: tambahkan generationConfig jika perlu
+            // generationConfig: {
+            //   temperature: 0.7, // Untuk kreativitas, bisa disesuaikan
+            //   // maxOutputTokens: 2048,
+            // }
+        };
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+                console.error("Gemini API Error Full Response:", errorData);
+            } catch (e) {
+                console.error("Gemini API Error: Could not parse error response JSON.", e);
+                errorData = { error: { message: response.statusText } };
+            }
+            const errorMessage = errorData.error?.message || response.statusText || "Unknown API error";
+            if (response.status === 400 && errorMessage.includes("API key not valid")) {
+                 throw new Error("API Key tidak valid. Harap periksa konfigurasi API Key Anda di Google AI Studio atau pastikan sudah benar di script.js.");
+            }
+            if (response.status === 429) {
+                throw new Error("Terlalu banyak permintaan ke API Gemini. Silakan coba lagi nanti (Rate limit exceeded).");
+            }
+            throw new Error(`Error dari API Gemini: ${errorMessage} (Status: ${response.status})`);
+        }
+
+        const data = await response.json();
+        console.log("Gemini API Response:", data);
+
+        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+            return data.candidates[0].content.parts[0].text;
+        } else if (data.promptFeedback && data.promptFeedback.blockReason) {
+            // Jika ada blockReason, tampilkan itu sebagai pesan error yang lebih informatif
+            const blockReason = data.promptFeedback.blockReason;
+            const safetyRatings = data.promptFeedback.safetyRatings.map(r => `${r.category}: ${r.probability}`).join(', ');
+            throw new Error(`Permintaan diblokir oleh API Gemini. Alasan: ${blockReason}. Detail: ${safetyRatings}`);
+        } else {
+            console.error("Invalid response structure from Gemini API:", data);
+            throw new Error("Format respons dari API tidak valid atau tidak ada konten yang dihasilkan.");
+        }
+    }
+
+    // --- Fungsi Simulasi API (sekarang hanya sebagai fallback jika SIMULATE_API true) ---
+    async function simulateGeminiApiCall(inputText) { // Fungsi ini tetap ada jika SIMULATE_API = true
         const inputLang = inputLanguageSelector.value;
         const outputLang = outputLanguageSelector.value;
 
@@ -422,31 +508,62 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Input language changed to: " + inputLanguageSelector.value);
     });
 
-    outputLanguageSelector.addEventListener('change', () => {
-        // If an email is displayed, and sliders have modified it,
-        // changing output lang should ideally re-fetch or re-simulate for the new lang
-        // and then re-apply slider effects.
-        // For now, we'll make it simple: re-simulate and re-apply current slider settings.
-        if (originalGeneratedText && professionalEmail.value && !professionalEmail.classList.contains('opacity-0')) {
-            // Re-simulate with new output language, using the very original user input.
-            // Then, re-apply slider adjustments.
-            (async () => {
+    outputLanguageSelector.addEventListener('change', async () => {
+        console.log("Output language changed to: " + outputLanguageSelector.value);
+        if (SIMULATE_API) { // Jika simulasi, lakukan simulasi ulang sederhana
+            if (originalGeneratedText && professionalEmail.value && !professionalEmail.classList.contains('opacity-0')) {
                 showLoadingState(true);
                 try {
-                    const newRawOutput = await simulateGeminiApiCall(userOriginalInput); // userOriginalInput is the raw text
-                    originalGeneratedText = newRawOutput; // This becomes the new base for sliders
-                    adjustEmailSimulated(); // This function reads current slider values and applies them
-                    professionalEmail.classList.remove('opacity-0'); // ensure it's visible
+                    const newRawOutput = await simulateGeminiApiCall(userOriginalInput);
+                    originalGeneratedText = newRawOutput;
+                    adjustEmailSimulatedFallback(); // Gunakan fallback simulasi
+                    professionalEmail.classList.remove('opacity-0');
                     professionalEmail.classList.add('opacity-100');
                 } catch (e) {
                     console.error("Error re-simulating for language change:", e);
-                    displayError("Gagal mengubah bahasa output. Coba generate ulang.");
+                    displayError("Gagal mengubah bahasa output (simulasi). Coba generate ulang.");
                 } finally {
                     showLoadingState(false);
                 }
-            })();
+            }
+            return;
         }
-         console.log("Output language changed to: " + outputLanguageSelector.value);
+
+        // Logika untuk API asli
+        if (userOriginalInput && professionalEmail.value && !professionalEmail.classList.contains('opacity-0')) {
+            if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
+                displayError("API Key Gemini belum dikonfigurasi untuk mengubah bahasa output. Silakan periksa script.js.");
+                return;
+            }
+            showLoadingState(true);
+            professionalEmail.classList.add('opacity-50');
+            try {
+                const currentInputLang = inputLanguageSelector.value;
+                const newOutputLang = outputLanguageSelector.value;
+
+                const formalityMap = ["very casual", "neutral", "very formal"];
+                const styleMap = ["diplomatic", "direct", "persuasive"];
+                const concisenessMap = ["detailed and comprehensive", "medium", "brief and concise"];
+                const currentToneSettings = {
+                    formality: formalityMap[formalitySlider.value],
+                    style: styleMap[styleSlider.value],
+                    conciseness: concisenessMap[concisenessSlider.value]
+                };
+
+                const newTransformedText = await callGeminiApi(userOriginalInput, currentInputLang, newOutputLang, currentToneSettings);
+                originalGeneratedText = newTransformedText; // Simpan ini sebagai basis baru
+                professionalEmail.value = newTransformedText;
+
+                professionalEmail.classList.remove('opacity-0');
+                professionalEmail.classList.add('opacity-100');
+            } catch (error) {
+                console.error("Error changing output language with API:", error);
+                displayError(error.message || "Gagal mengubah bahasa output dengan API.");
+            } finally {
+                showLoadingState(false);
+                professionalEmail.classList.remove('opacity-50');
+            }
+        }
     });
 
 });
