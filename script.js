@@ -113,9 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.classList.add('opacity-100');
             toneSlidersContainer.classList.remove('hidden'); // Tampilkan slider
             // Reset slider values to default (1) if it's a new generation
-            formalitySlider.value = 1; updateFormalityValue();
-            styleSlider.value = 1; updateStyleValue();
-            concisenessSlider.value = 1; updateConcisenessValue();
+            formalitySlider.value = 1; updateFormalityValueDisplay(); // FIX: Changed to Display
+            styleSlider.value = 1; updateStyleValueDisplay();       // FIX: Changed to Display
+            concisenessSlider.value = 1; updateConcisenessValueDisplay(); // FIX: Changed to Display
 
             // Display and analyze the original user input
             if (userOriginalInput) {
