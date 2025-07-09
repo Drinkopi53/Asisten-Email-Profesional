@@ -30,8 +30,38 @@
         </header>
 
         <main>
+            <!-- Fitur 3: Template Berbasis Konteks -->
+            <div class="mb-4">
+                <label for="templateSelector" class="block text-sm font-medium text-gray-400 mb-1">Atau mulai dengan template (opsional):</label>
+                <select id="templateSelector" class="w-full p-2.5 bg-gray-800 border border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-300 text-sm">
+                    <option value="">Pilih template...</option>
+                    <option value="follow_up_interview">Follow-up Setelah Wawancara</option>
+                    <option value="reject_offer">Menolak Tawaran Kerja</option>
+                    <option value="request_raise">Meminta Kenaikan Gaji (Contoh)</option>
+                    <option value="resign">Mengundurkan Diri (Contoh)</option>
+                    <option value="introduction">Memperkenalkan Diri ke Kontak Baru</option>
+                </select>
+            </div>
+            <!-- Akhir Fitur 3 -->
+
+            <!-- Fitur 4: Asisten Komunikasi Lintas Bahasa (UI) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="inputLanguageSelector" class="block text-sm font-medium text-gray-400 mb-1">Bahasa Input:</label>
+                    <select id="inputLanguageSelector" class="w-full p-2.5 bg-gray-800 border border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-300 text-sm">
+                        <option value="id">Bahasa Indonesia</option>
+                        <option value="en">English</option>
+                        <!-- Tambahkan bahasa lain jika perlu -->
+                    </select>
+                </div>
+                <div>
+                    <!-- Placeholder for Output Language, to be placed above output area later if needed -->
+                </div>
+            </div>
+            <!-- Akhir Fitur 4 (Input Part) -->
+
             <div class="mb-6">
-                <label for="userInput" class="block text-sm font-medium text-gray-300 mb-1">Masukkan draf email Anda di sini:</label>
+                <label for="userInput" class="block text-sm font-medium text-gray-300 mb-1">Masukkan draf email Anda di sini (atau edit template di atas):</label>
                 <textarea id="userInput" rows="8" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-200 placeholder-gray-500 text-base" placeholder="Contoh: Bro, bisa tolong kirim laporan penjualan buat minggu ini? Butuh cepet nih. Thanks!"></textarea>
             </div>
 
@@ -46,14 +76,76 @@
             <div id="errorMessages" class="mt-4 text-red-400 text-sm"></div>
 
             <div class="mt-8">
+                <!-- Fitur 4: Output Language Selector -->
+                <div class="mb-2">
+                    <label for="outputLanguageSelector" class="block text-sm font-medium text-gray-400 mb-1">Bahasa Output:</label>
+                    <select id="outputLanguageSelector" class="w-full md:w-1/2 p-2.5 bg-gray-800 border border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-300 text-sm">
+                        <option value="id">Bahasa Indonesia</option>
+                        <option value="en" selected>English</option>
+                        <!-- Tambahkan bahasa lain jika perlu -->
+                    </select>
+                </div>
+                <!-- Akhir Fitur 4 (Output Part) -->
                 <label for="professionalEmail" class="block text-sm font-medium text-gray-300 mb-1">Email Profesional yang Disarankan:</label>
                 <div class="relative">
-                    <textarea id="professionalEmail" rows="10" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-md shadow-sm text-gray-300 text-base readonly" readonly placeholder="Hasil email profesional akan muncul di sini..."></textarea>
-                    <button id="copyButton" class="absolute top-2 right-2 bg-gray-600 hover:bg-gray-500 text-gray-300 font-semibold py-1 px-3 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-150">
+                    <textarea id="professionalEmail" rows="10" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-md shadow-sm text-gray-300 text-base readonly opacity-0 transition-opacity duration-500 ease-in-out" readonly placeholder="Hasil email profesional akan muncul di sini..."></textarea>
+                    <button id="copyButton" class="absolute top-2 right-2 bg-gray-600 hover:bg-gray-500 text-gray-300 font-semibold py-1 px-3 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-150 opacity-0 transition-opacity duration-500 ease-in-out">
                         Salin
                     </button>
                 </div>
             </div>
+
+            <!-- Fitur 1: Tone & Style Sliders -->
+            <div id="toneSlidersContainer" class="mt-6 pt-6 border-t border-gray-600 hidden">
+                <h3 class="text-lg font-semibold text-gray-300 mb-4">Sesuaikan Nada & Gaya (Simulasi)</h3>
+
+                <div class="space-y-5">
+                    <div>
+                        <label for="formalitySlider" class="block text-sm font-medium text-gray-400">Formalitas: <span id="formalityValue" class="font-bold text-blue-400">Netral</span></label>
+                        <input type="range" id="formalitySlider" min="0" max="2" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Sangat Santai</span>
+                            <span>Netral</span>
+                            <span>Sangat Formal</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="styleSlider" class="block text-sm font-medium text-gray-400">Gaya Bahasa: <span id="styleValue" class="font-bold text-blue-400">Langsung</span></label>
+                        <input type="range" id="styleSlider" min="0" max="2" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Diplomatis</span>
+                            <span>Langsung</span>
+                            <span>Persuasif</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="concisenessSlider" class="block text-sm font-medium text-gray-400">Keringkasan: <span id="concisenessValue" class="font-bold text-blue-400">Sedang</span></label>
+                        <input type="range" id="concisenessSlider" min="0" max="2" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Lengkap & Rinci</span>
+                            <span>Sedang</span>
+                            <span>Singkat & Padat</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Akhir Fitur 1 -->
+
+            <!-- Fitur 2: Analisis dan Umpan Balik Edukatif -->
+            <div id="analysisContainer" class="mt-6 pt-6 border-t border-gray-600 hidden">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Analisis Draf Awal Anda (Simulasi)</h3>
+                <p class="text-xs text-gray-400 mb-4">Arahkan kursor ke teks yang disorot untuk saran.</p>
+                <div id="originalTextWithHighlights" class="p-3 bg-gray-800 rounded-md text-gray-300 text-sm leading-relaxed">
+                    <!-- Teks asli dengan highlight akan muncul di sini -->
+                </div>
+                <div id="analysisTooltip" class="hidden absolute bg-gray-900 text-white text-xs rounded-md p-2 shadow-lg z-10 border border-gray-500">
+                    <!-- Tooltip content -->
+                </div>
+            </div>
+            <!-- Akhir Fitur 2 -->
+
         </main>
 
         <footer class="mt-8 text-center">
