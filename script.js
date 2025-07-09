@@ -374,28 +374,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 let footer = `Kami akan segera memberikan pembaruan lebih lanjut.\n\nHormat kami,\n\n[Nama Anda]`;
 
                 // Simple heuristic to summarize if inputText is very long (likely a template)
-                let summarizedInputText = inputText;
-                if (inputText.length > 100) { // Arbitrary length to detect template-like text
-                    summarizedInputText = inputText.substring(0, 50) + "... (summary of your draft)";
-                }
+                // Removed summarizedInputText as it's not the right approach for this simulation.
+                // The simulation will now generate entirely generic content for cross-language requests.
 
                 if (inputLang === 'id' && outputLang === 'en') {
                     header = `Dear Sir/Madam,\n\n`;
-                    body = `Regarding your inquiry/draft about "${summarizedInputText}", please be informed that we are currently processing its professional English version.\n\n`;
-                    footer = `We will provide the composed email shortly.\n\nSincerely,\n[Your Name]`;
+                    // Generic English body, does NOT include original Indonesian text.
+                    body = `This is a professionally styled English email based on the Indonesian draft you provided.\n\nIt has been structured to effectively convey your message in a formal and clear manner, suitable for professional communication.\n\nKey points from your original draft (simulated understanding):\n- Purpose: [e.g., Follow-up, Inquiry, Request based on context if AI were real]\n- Recipient: [e.g., Hiring Manager, Colleague if AI were real]\n\nPlease review and use as needed.\n\n`;
+                    footer = `Sincerely,\n[Your Name]`;
                     simulatedResponse = `(Simulated Professional English version of your Indonesian draft)\n\n${header}${body}${footer}`;
                 } else if (inputLang === 'en' && outputLang === 'id') {
                     header = `Kepada pihak yang berkepentingan,\n\n`;
-                    body = `Sehubungan dengan pertanyaan/draf Anda mengenai "${summarizedInputText}", dengan ini kami informasikan bahwa versi profesional Bahasa Indonesia sedang kami proses.\n\n`;
-                    footer = `Kami akan segera memberikan email yang telah disusun.\n\nHormat kami,\n\n[Nama Anda]`;
+                    // Generic Indonesian body, does NOT include original English text.
+                    body = `Berikut adalah email berbahasa Indonesia yang telah disusun secara profesional berdasarkan draf bahasa Inggris yang Anda berikan.\n\nEmail ini telah diformat untuk menyampaikan pesan Anda secara formal, jelas, dan efektif, sesuai untuk komunikasi profesional.\n\nPoin-poin utama dari draf asli Anda (pemahaman simulasi):\n- Tujuan: [misalnya, Tindak lanjut, Pertanyaan, Permintaan berdasarkan konteks jika AI sungguhan]\n- Penerima: [misalnya, Manajer Perekrutan, Kolega jika AI sungguhan]\n\nSilakan ditinjau dan digunakan sesuai kebutuhan.\n\n`;
+                    footer = `Hormat kami,\n[Nama Anda]`;
                     simulatedResponse = `(Versi profesional Bahasa Indonesia simulasi dari draf Bahasa Inggris Anda)\n\n${header}${body}${footer}`;
                 } else if (inputLang === 'en' && outputLang === 'en') {
+                    // Simulation for EN to EN (can be more direct about input)
                     header = `Dear Sir/Madam,\n\n`;
-                    body = `Regarding your inquiry/draft about "${summarizedInputText}", please be informed that we are currently processing its professional version.\n\n`;
-                    footer = `We will provide the composed email shortly.\n\nSincerely,\n[Your Name]`;
+                    body = `This is a professionally revised version of your English draft:\n\n"${inputText}"\n\nWe have refined the structure and tone for clarity and professional impact.\n\n`;
+                    footer = `Sincerely,\n[Your Name]`;
                     simulatedResponse = `${header}${body}${footer}`;
-                } else { // Default to ID-ID or if langs are same
-                    body = `Menindaklanjuti permintaan/draf Anda terkait "${summarizedInputText}", dengan ini kami sampaikan bahwa versi profesionalnya sedang kami proses.\n\n`;
+                } else { // Default to ID-ID or if inputLang === outputLang (e.g. id to id)
+                    header = `Kepada pihak yang berkepentingan,\n\n`;
+                    body = `Berikut adalah versi profesional dari draf Bahasa Indonesia Anda:\n\n"${inputText}"\n\nTelah kami sesuaikan struktur dan gayanya agar lebih jelas dan berdampak profesional.\n\n`;
+                    footer = `Hormat kami,\n[Nama Anda]`;
                     simulatedResponse = `${header}${body}${footer}`;
                 }
                 resolve(simulatedResponse);
