@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Konfigurasi API (PENTING: Ganti dengan API Key Anda) ---
-    const API_KEY = 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    const API_KEY = 'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
     // --- Mode Simulasi API (untuk pengembangan tanpa API Key asli) ---
     const SIMULATE_API = false; // DISET KE FALSE untuk menggunakan API Gemini asli
