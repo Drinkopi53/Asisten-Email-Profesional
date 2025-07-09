@@ -373,22 +373,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 let body = `Menindaklanjuti permintaan Anda terkait "${inputText}", dengan ini kami sampaikan bahwa hal tersebut sedang kami proses.\n\n`;
                 let footer = `Kami akan segera memberikan pembaruan lebih lanjut.\n\nHormat kami,\n\n[Nama Anda]`;
 
+                // Simple heuristic to summarize if inputText is very long (likely a template)
+                let summarizedInputText = inputText;
+                if (inputText.length > 100) { // Arbitrary length to detect template-like text
+                    summarizedInputText = inputText.substring(0, 50) + "... (summary of your draft)";
+                }
+
                 if (inputLang === 'id' && outputLang === 'en') {
                     header = `Dear Sir/Madam,\n\n`;
-                    body = `Regarding your inquiry about "${inputText}", please be informed that we are currently processing it.\n\n`;
-                    footer = `We will provide further updates shortly.\n\nSincerely,\n[Your Name]`;
+                    body = `Regarding your inquiry/draft about "${summarizedInputText}", please be informed that we are currently processing its professional English version.\n\n`;
+                    footer = `We will provide the composed email shortly.\n\nSincerely,\n[Your Name]`;
                     simulatedResponse = `(Simulated Professional English version of your Indonesian draft)\n\n${header}${body}${footer}`;
                 } else if (inputLang === 'en' && outputLang === 'id') {
                     header = `Kepada pihak yang berkepentingan,\n\n`;
-                    body = `Sehubungan dengan pertanyaan Anda mengenai "${inputText}", dengan ini kami informasikan bahwa saat ini sedang kami proses.\n\n`;
-                    footer = `Kami akan segera memberikan pembaruan lebih lanjut.\n\nHormat kami,\n\n[Nama Anda]`;
+                    body = `Sehubungan dengan pertanyaan/draf Anda mengenai "${summarizedInputText}", dengan ini kami informasikan bahwa versi profesional Bahasa Indonesia sedang kami proses.\n\n`;
+                    footer = `Kami akan segera memberikan email yang telah disusun.\n\nHormat kami,\n\n[Nama Anda]`;
                     simulatedResponse = `(Versi profesional Bahasa Indonesia simulasi dari draf Bahasa Inggris Anda)\n\n${header}${body}${footer}`;
                 } else if (inputLang === 'en' && outputLang === 'en') {
                     header = `Dear Sir/Madam,\n\n`;
-                    body = `Regarding your inquiry about "${inputText}", please be informed that we are currently processing it.\n\n`;
-                    footer = `We will provide further updates shortly.\n\nSincerely,\n[Your Name]`;
+                    body = `Regarding your inquiry/draft about "${summarizedInputText}", please be informed that we are currently processing its professional version.\n\n`;
+                    footer = `We will provide the composed email shortly.\n\nSincerely,\n[Your Name]`;
                     simulatedResponse = `${header}${body}${footer}`;
                 } else { // Default to ID-ID or if langs are same
+                    body = `Menindaklanjuti permintaan/draf Anda terkait "${summarizedInputText}", dengan ini kami sampaikan bahwa versi profesionalnya sedang kami proses.\n\n`;
                     simulatedResponse = `${header}${body}${footer}`;
                 }
                 resolve(simulatedResponse);
