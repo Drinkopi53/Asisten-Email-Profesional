@@ -44,8 +44,8 @@ Untuk menjalankan proyek ini secara lokal:
     *   Pastikan API Key Anda memiliki akses ke model Gemini.
 3.  **Konfigurasi API Key**:
     *   Buka file `script.js`.
-    *   Temukan baris `const API_KEY = 'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0';`
-    *   Ganti placeholder `'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0'` dengan API Key Google Gemini Anda yang sebenarnya.
+    *   Temukan baris `const API_KEY = 'Gemini API Key';`
+    *   Ganti placeholder `'Gemini API Key'` dengan API Key Google Gemini Anda yang sebenarnya.
     *   Pastikan `const SIMULATE_API = false;` jika Anda ingin menggunakan API Gemini asli.
 4.  **Buka di Browser**: Buka file `index.html` di browser web pilihan Anda.
 
