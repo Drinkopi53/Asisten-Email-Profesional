@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessages = document.getElementById('errorMessages');
 
     // --- Konfigurasi API (PENTING: Ganti dengan API Key Anda) ---
-    // const API_KEY = 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI';
-    // const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    const API_KEY = 'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0';
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
     // --- Mode Simulasi API (untuk pengembangan tanpa API Key asli) ---
     const SIMULATE_API = true; // Set ke false jika menggunakan API Key asli
@@ -33,10 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Kode untuk panggilan API Gemini asli (membutuhkan API_KEY dan API_URL yang dikonfigurasi)
                 // Pastikan Anda memiliki API_KEY yang valid.
-                // if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
-                //     throw new Error("API Key Gemini belum dikonfigurasi. Silakan edit script.js.");
-                // }
-                // generatedText = await callGeminiApi(inputText);
+                if (!API_KEY || API_KEY === 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI') {
+                    throw new Error("API Key Gemini belum dikonfigurasi. Silakan edit script.js.");
+                }
+                generatedText = await callGeminiApi(inputText);
                 displayError("Mode API asli belum diimplementasikan sepenuhnya dalam contoh ini. Atur SIMULATE_API ke true atau lengkapi callGeminiApi.");
                 throw new Error("Panggilan API asli belum diimplementasikan.");
 
@@ -94,45 +94,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Fungsi untuk Panggilan API Gemini Asli (Contoh) ---
-    // async function callGeminiApi(promptText) {
-    //     const requestBody = {
-    //         contents: [{
-    //             parts: [{
-    //                 text: `Tulis ulang teks berikut menjadi sebuah email yang formal dan profesional, dengan tetap menjaga inti pesan. Jika teksnya sudah cukup formal, sempurnakan sedikit agar lebih baik. Teks asli: "${promptText}"`
-    //             }]
-    //         }],
-    //         // Optional: tambahkan generationConfig jika perlu
-    //         // generationConfig: {
-    //         //   temperature: 0.7,
-    //         //   topK: 1,
-    //         //   topP: 1,
-    //         //   maxOutputTokens: 2048,
-    //         // }
-    //     };
+    async function callGeminiApi(promptText) {
+        const requestBody = {
+            contents: [{
+                parts: [{
+                    text: `Tulis ulang teks berikut menjadi sebuah email yang formal dan profesional, dengan tetap menjaga inti pesan. Jika teksnya sudah cukup formal, sempurnakan sedikit agar lebih baik. Teks asli: "${promptText}"`
+                }]
+            }],
+            // Optional: tambahkan generationConfig jika perlu
+            // generationConfig: {
+            //   temperature: 0.7,
+            //   topK: 1,
+            //   topP: 1,
+            //   maxOutputTokens: 2048,
+            // }
+        };
 
-    //     const response = await fetch(API_URL, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify(requestBody)
-    //     });
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-    //     if (!response.ok) {
-    //         const errorData = await response.json();
-    //         console.error("Gemini API Error:", errorData);
-    //         throw new Error(`Error dari API Gemini: ${errorData.error?.message || response.statusText}`);
-    //     }
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Gemini API Error:", errorData);
+            throw new Error(`Error dari API Gemini: ${errorData.error?.message || response.statusText}`);
+        }
 
-    //     const data = await response.json();
-    //     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-    //         return data.candidates[0].content.parts[0].text;
-    //     } else {
-    //         // Handle kasus dimana respons tidak sesuai format yang diharapkan
-    //         console.error("Invalid response structure from Gemini API:", data);
-    //         throw new Error("Format respons dari API tidak valid.");
-    //     }
-    // }
+        const data = await response.json();
+        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            // Handle kasus dimana respons tidak sesuai format yang diharapkan
+            console.error("Invalid response structure from Gemini API:", data);
+            throw new Error("Format respons dari API tidak valid.");
+        }
+    }
 
     // --- Fungsi Simulasi API ---
     async function simulateGeminiApiCall(inputText) {
