@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Konfigurasi API (PENTING: Ganti dengan API Key Anda) ---
-    const API_KEY = 'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    const API_KEY = 'MASUKKAN_API_KEY_GEMINI_ANDA_DI_SINI'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     // --- Mode Simulasi API (untuk pengembangan tanpa API Key asli) ---
     const SIMULATE_API = false; // DISET KE FALSE untuk menggunakan API Gemini asli
@@ -113,9 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.classList.add('opacity-100');
             toneSlidersContainer.classList.remove('hidden'); // Tampilkan slider
             // Reset slider values to default (1) if it's a new generation
-            formalitySlider.value = 1; updateFormalityValue();
-            styleSlider.value = 1; updateStyleValue();
-            concisenessSlider.value = 1; updateConcisenessValue();
+            formalitySlider.value = 1; updateFormalityValueDisplay(); // FIX: Changed to Display
+            styleSlider.value = 1; updateStyleValueDisplay();       // FIX: Changed to Display
+            concisenessSlider.value = 1; updateConcisenessValueDisplay(); // FIX: Changed to Display
 
             // Display and analyze the original user input
             if (userOriginalInput) {
