@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Konfigurasi API (PENTING: Ganti dengan API Key Anda) ---
-    const API_KEY = 'AIzaSyDet_RXvk9Xb1W67qxe0aoIr_iCst2qOt0'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
+    const API_KEY = 'Gemini API Key'; // PENTING: Pastikan ini sudah diisi dengan API Key Anda!
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
     // --- Mode Simulasi API (untuk pengembangan tanpa API Key asli) ---
